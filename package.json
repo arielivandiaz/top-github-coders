@@ -1,0 +1,21 @@
+{
+  "name": "arl-0-node",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "@octokit/auth": "^2.0.0",
+    "@octokit/auth-oauth-app": "^3.0.5",
+    "@octokit/auth-token": "^2.4.2",
+    "@octokit/core": "^3.1.2",
+    "@octokit/rest": "^18.0.4",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "delay": "^4.4.0",
+    "express": "~4.16.1",
+    "morgan": "~1.9.1",
+    "node-fetch": "^2.6.0"
+  }
+}
