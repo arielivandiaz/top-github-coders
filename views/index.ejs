@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lagunite</title>
+    <!-- META -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0"
+    />
+
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <link type="text/css" rel="stylesheet" href="main.css" />
+  </head>
+  <body>
+    <div class="scoreboard">
+      <% for( var i=0; i< rank.length; i++ ) { %> <% if(i ==50) break; %>
+      <div class="user">
+
+        <div class="col1">
+          <a href="<%= rank[i].profileUrl %>">
+            <img src="<%= rank[i].img %>" />
+          </a>
+        </div>
+
+        <div class="col2">
+          <h1><%= rank[i].name %></h1>
+          <h5><%= rank[i].company %></h5>
+          <h3><%= rank[i].location %></h3>
+        </div>
+        <div class="col3">
+          <ul>
+            <li>
+              <h3><%= rank[i].public_repos %></h3>
+              repos
+            </li>
+            <li>
+              <h3><%= rank[i].followers %></h3>
+              seguidores
+            </li>
+            <li>
+              <h3><%= rank[i].stars %></h3>
+              stars
+            </li>
+            <li>
+              <h3><%= rank[i].commits %></h3>
+              commits
+            </li>
+          </ul>
+        </div>
+        <div class="col4">
+          <span>Rank</span>
+          <h1><%= i+1 %></h1>
+          <h4>Score : <%= rank[i].score.toFixed(2) %></h4>
+        </div>
+      </div>
+
+      <% } %>
+    </div>
+
+    <script>
+
+
+      var maxFollowers = <%= maxValues.maxFollowers %>;
+      var maxStars = <%= maxValues.maxStars %>;
+      var maxCommits = <%= maxValues.maxCommits %>;
+      var maxRepos = <%= maxValues.maxRepos  %>;
+
+      var top_1 = <%= rank[0].score %>;
+      var top_50 = <%= rank[rank.length-1].score %>;
+
+
+            let getDate = () => {
+              var todayTime = new Date();
+              var month = String(todayTime.getMonth() + 1);
+              var day = String(todayTime.getDate());
+              var year = String(todayTime.getFullYear());
+
+              if (day.length < 2) day = "0" + day;
+              if (month.length < 2) month = "0" + month;
+
+              return year - 1 + "-" + month + "-" + day;
+            };
+            //console.log(getDate());
+
+            var user = "arielivandiaz";
+            var user_url = "https://api.github.com/users/" + user;
+            var profile = {};
+
+            fetch(user_url, {
+              method: "get",
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/vnd.github.v3+json",
+              },
+            })
+              .then((res) => res.json())
+              .then((userData) => {
+                profile = {
+                  login: userData.login,
+                  id: userData.id,
+                  img: userData.avatar_url,
+                  profileUrl: userData.html_url,
+                  url: userData.url,
+                  location: userData.location,
+                  company: userData.company,
+                  name: userData.name,
+                  repos_url: userData.repos_url,
+                  public_repos: userData.public_repos,
+                  followers: userData.followers,
+                  stars: 0,
+                  commits: 0,
+                  prs: 0,
+                  score: 0,
+                  rank: 1000
+                };
+
+                fetch("https://api.github.com/search/repositories?q=user:" + user, {
+                  method: "get",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/vnd.github.v3+json",
+                  },
+                })
+                  .then((res) => res.json())
+                  .then((json) => {
+                    profile.stars = json.total_count;
+
+                    var uri =
+                      "https://api.github.com/search/commits?q=author:" +
+                      user +
+                      " committer-date:>" +
+                      getDate();
+
+                    fetch(uri, {
+                      method: "get",
+                      headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/vnd.github.cloak-preview+json",
+                      },
+                    })
+                      .then((res) => res.json())
+                      .then((json) => {
+
+                        profile.commits = json.total_count;
+
+                        profile.score =
+                        (profile.public_repos / maxRepos +
+                        profile.followers / maxFollowers +
+                        profile.stars / maxStars +
+                        profile.commits / maxCommits) /
+                        4;
+
+                        console.log(profile);
+
+
+                      });
+                  });
+              });
+    </script>
+  </body>
+</html>

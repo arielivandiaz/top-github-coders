@@ -31,6 +31,14 @@ compareScore = (a, b) => {
   return comparison;
 };
 
+/* Resources */
+// Project Peru: https://github.com/joelibaceta/top-coders-peru
+// Advanced Serch
+//https://github.com/search/advanced
+// ex: stars:>1 location:Argentina followers:>5 repos:>1
+
+const test_mode = 0;
+
 var masterRank = [];
 
 var maxFollowers = 1;
@@ -39,17 +47,20 @@ var maxCommits = 1;
 var maxRepos = 1;
 var maxPRS = 1;
 
-var per_page = 100;
+/*
+if (test_mode)
+  url = {
+    getUsers: "http://localhost:4747/getUsers.txt",
+  };
+  */
 var url = {
   getUsers:
-    "https://api.github.com/search/users?q=location:argentina%20followers:%3E10%20repos:%3E10%20type:user&per_page=" +
-    per_page +
-    "&page=#1&sort=followers&order=desc",
+    "https://api.github.com/search/users?q=location:argentina%20followers:%3E10%20repos:%3E10%20type:user&per_page=5&page=#1&sort=followers&order=desc",
 };
 
 /***************************** getUsers ********************************/
-let getUsers = async (token) => {
-  let promise = new Promise((resolve, reject) => {
+let getUsers = (token) => {
+  return new Promise((resolve, reject) => {
     fetch(url.getUsers, {
       method: "get",
       headers: {
@@ -63,12 +74,11 @@ let getUsers = async (token) => {
         resolve(json);
       });
   });
-  return await promise;
 };
 
 /***************************** getUserData ********************************/
-let getUserData = async (user_url, token) => {
-  let promise = new Promise((resolve, reject) => {
+let getUserData = (user_url, token) => {
+  return new Promise((resolve, reject) => {
     fetch(user_url, {
       method: "get",
       headers: {
@@ -82,7 +92,6 @@ let getUserData = async (user_url, token) => {
         resolve(json);
       });
   });
-  return await promise;
 };
 
 /***************************** getRateLimit ********************************/
@@ -105,8 +114,8 @@ let getRateLimit = (token) => {
 };
 
 /***************************** getStars ********************************/
-let getStars = async (login, token) => {
-  let promise = new Promise((resolve, reject) => {
+let getStars = (login, token) => {
+  return new Promise((resolve, reject) => {
     //console.log("https://api.github.com/search/repositories?q=user:" + login);
     fetch("https://api.github.com/search/repositories?q=user:" + login, {
       method: "get",
@@ -119,12 +128,82 @@ let getStars = async (login, token) => {
       .then((res) => res.json())
       .then((json) => resolve(json.total_count));
   });
-  return await promise;
+};
+
+/***************************** setStars ********************************/
+
+let setStars = (rank, token) => {
+  return new Promise((resolve, reject) => {
+    let promises = [];
+
+    rank.forEach((user) => {
+      promises.push(getStars(user.login, token));
+    });
+
+    Promise.all(promises)
+      .then((stars) => {
+        for (var i = 0; i < rank.length; i++) {
+          rank[i].stars = stars[i];
+        }
+        resolve(rank);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
+
+/***************************** getPRs ********************************/
+let getPRs = (login, token) => {
+  return new Promise((resolve, reject) => {
+    //console.log("https://api.github.com/search/repositories?q=user:" + login);
+
+    var uri =
+      "https://api.github.com/search/issues?q=involves:" +
+      login +
+      "%20type:pr%20is:merged%20is:public%20not%20 " +
+      login +
+      "%20%20&per_page=1";
+    //console.log(uri);
+    fetch(uri, {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/vnd.github.v3+json",
+        authorization: token,
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => resolve(json.total_count));
+  });
+};
+
+/***************************** setPRs ********************************/
+
+let setPRs = (rank, token) => {
+  return new Promise((resolve, reject) => {
+    let promises = [];
+
+    rank.forEach((user) => {
+      promises.push(getPRs(user.login, token));
+    });
+
+    Promise.all(promises)
+      .then((prs) => {
+        for (var i = 0; i < rank.length; i++) {
+          rank[i].prs = prs[i];
+        }
+        resolve(rank);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 };
 
 /***************************** getCommits********************************/
-let getCommits = async (login, token) => {
-  let promise = new Promise((resolve, reject) => {
+let getCommits = (login, token) => {
+  return new Promise((resolve, reject) =>   {
     var uri =
       "https://api.github.com/search/commits?q=author:" +
       login +
@@ -137,15 +216,118 @@ let getCommits = async (login, token) => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/vnd.github.cloak-preview",
-        authorization: token,
       },
     })
       .then((res) => res.json())
       .then((json) => {
-        resolve(json.total_count);
+        resolve(json);
       });
+      //.then((json) => new Promise(resolve  => setTimeout(() => resolve(json.total_count), 10)));      
+   
+  });
+};
+
+/***************************** getCommits********************************/
+let getCommits2 = async (login, token) => {
+
+  let promise = new Promise((resolve, reject) =>   {
+    var uri =
+      "https://api.github.com/search/commits?q=author:" +
+      login +
+      " committer-date:>" +
+      getDate();
+
+    console.log(uri);
+    fetch(uri, {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/vnd.github.cloak-preview",
+      },
+    })
+      .then((res) => res.json())
+      .then((json) => {
+        resolve(json);
+      });
+      //.then((json) => new Promise(resolve  => setTimeout(() => resolve(json.total_count), 10)));      
+   
   });
   return await promise;
+};
+
+
+
+
+/***************************** setCommits ********************************/
+
+let setCommits = (rank, token) => {
+  return new Promise((resolve, reject) => {
+    let promises = [];
+
+    rank.forEach((user) => {
+      promises.push(getCommits(user.login, token));
+    });
+
+    Promise.all(promises)
+      .then((commits) => {
+        for (var i = 0; i < rank.length; i++) {
+          rank[i].commits = commits[i];
+        }
+        resolve(rank);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
+};
+
+/***************************** main1 - setUsers ********************************/
+let setUsers = (token) => {
+  return new Promise((resolve, reject) => {
+    getUsers(token)
+      .then((users) => {
+        let promises = [];
+
+        users.items.forEach((user) => {
+          promises.push(getUserData(user.url, token));
+        });
+
+        Promise.all(promises)
+          .then((userData) => {
+            var rankMaster = [];
+
+            for (var i = 0; i < userData.length; i++) {
+              var obj = {};
+
+              var userObject = {
+                login: userData[i].login,
+                id: userData[i].id,
+                img: userData[i].avatar_url,
+                profileUrl: userData[i].html_url,
+                url: userData[i].url,
+                location: userData[i].location,
+                company: userData[i].company,
+                name: userData[i].name,
+                repos_url: userData[i].repos_url,
+                public_repos: userData[i].public_repos,
+                followers: userData[i].followers,
+                stars: 0,
+                commits: 0,
+                prs: 0,
+              };
+
+              rankMaster.push(userObject);
+            }
+            resolve(rankMaster);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 };
 
 /************************************************************** 
@@ -193,38 +375,57 @@ fetch('https://api.github.com/repos/PASTR4NA/Contamicrap_SinTimer/languages')
 
 /****************************** *********************************/
 
-let singleUser = async (user, token) => {
-  var uri = "https://api.github.com/users/" + user;
-  //console.log(uri);
-  await new Promise((r) => setTimeout(r, 2000));
-  var userData = await getUserData(uri, token);
-  await new Promise((r) => setTimeout(r, 2000));
-  var stars = await getStars(userData.login, token);
-  await new Promise((r) => setTimeout(r, 2000));
-  var commits = await getCommits(userData.login, token);
-
-  console.log(userData);
-
-  var profile = {
-    login: userData.login,
-    id: userData.id,
-    img: userData.avatar_url,
-    profileUrl: userData.html_url,
-    url: userData.url,
-    location: userData.location,
-    company: userData.company,
-    name: userData.name,
-    repos_url: userData.repos_url,
-    public_repos: userData.public_repos,
-    followers: userData.followers,
-    stars: stars,
-    commits: commits,
-    prs: 0,
-    score: 0,
-  };
-  //console.log(profile);
-  return profile;
-  //resolve(profile);
+let singleUser = (user, token) => {
+  return new Promise((resolve, reject) => {
+    var uri = "https://api.github.com/users/" + user;
+    //console.log(uri);
+    getUserData(uri, token)
+      .then((userData) => {
+        getStars(userData.login, token)
+          .then((stars) => {
+            getCommits(userData.login, token)
+              .then((commits) => {
+                /*
+                getPRs(userData.login, token)
+                  .then((prs) => {*/
+                var profile = {
+                  login: userData.login,
+                  id: userData.id,
+                  img: userData.avatar_url,
+                  profileUrl: userData.html_url,
+                  url: userData.url,
+                  location: userData.location,
+                  company: userData.company,
+                  name: userData.name,
+                  repos_url: userData.repos_url,
+                  public_repos: userData.public_repos,
+                  followers: userData.followers,
+                  stars: stars,
+                  commits: commits,
+                  prs: 0,
+                  score: 0,
+                };
+                //console.log(profile);
+                masterRank.push(profile);
+                resolve(profile);
+                /*
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });*/
+              })
+              .catch((err) => {
+                console.log(err);
+              });
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  });
 };
 
 /* Example Output - SingleUser
@@ -266,114 +467,52 @@ auth({
 
 //Get Rank
 
-let getToken = async () => {
-  let promise = new Promise((resolve, reject) => {
+let main = () => {
+  return new Promise((resolve, reject) => {
+    masterRank = [];
+    masterRank.length = 0;
     auth({
       type: "oauth-app",
     })
       .then((response) => {
         var token = response.headers.authorization;
-        resolve(token);
+        getUsers(token)
+          .then((users) => {
+            let promises = [];
+            //console.log(users);
+
+            users.items.forEach((user) => {
+              // console.log(user.login);
+              promises.push(singleUser(user.login, token));
+            });
+
+            Promise.all(promises)
+              .then((rankData) => {
+                getRateLimit(token)
+                  .then((rate) => {
+                    console.log(rate.rate);
+                  })
+                  .catch((err) => {
+                    console.log(err);
+                  });
+                resolve(rankData);
+              })
+              .catch((err) => {
+                console.log(err);
+                reject(err);
+              });
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(err);
+          });
       })
       .catch((err) => {
         console.log(err);
         reject(err);
       });
   });
-  return await promise;
 };
-
-let main = async () => {
-  var token = await getToken();
-  console.log(token);
-  var users = await getUsers(token);
-
-  for (var i = 0; i < users.items.length; i++) {
-    console.log(users.items[i].login);
-    var newUser = await singleUser(users.items[i].login, token);
-    masterRank.push(newUser);
-  }
-
-  maxFollowers = 1;
-  maxStars = 1;
-  maxCommits = 1;
-  maxRepos = 1;
-  maxPRS = 1;
-
-  console.log("*******************************************");
-
-
-  masterRank.forEach((user) => {
-
-    if (user.public_repos > maxRepos) maxRepos = user.public_repos;
-    if (user.followers > maxFollowers) maxFollowers = user.followers;
-    if (user.stars > maxStars) maxStars = user.stars;
-    if (user.commits > maxCommits) maxCommits = user.commits;
-    if (user.prs > maxPRS) maxPRS = user.prs;
-  });
-
-  console.log("maxFollowers", maxFollowers);
-  console.log("maxStars", maxStars);
-  console.log("maxCommits", maxCommits);
-  console.log("maxRepos", maxRepos);
-  console.log("maxPRS", maxPRS);
-
-  masterRank.forEach((user) => {
-    user.score =
-      (parseInt(user.public_repos) / maxRepos +
-        parseInt(user.followers) / maxFollowers +
-        parseInt(user.stars) / maxStars +
-        parseInt(user.commits) / maxCommits) /
-      4;
-  });
-
-  masterRank.sort(compareScore);
-};
-main();
-
-/*
-
-
-
-let main = async () => {
-  let promise = new Promise((resolve, reject) => {
-    masterRank = [];
-    masterRank.length = 0;
-
-
-    var token =  await getToken();
-    //var users = await getUsers(token);
-    /*
-
-            users.items.forEach((user) => {
-              // console.log(user.login);
-              
-              
-              var newUser = await singleUser(user.login, token);
-              masterRank.push(newUser);
-
-            });
-
-
-            getRateLimit(token)
-                  .then((rate) => {
-                    console.log(rate.rate);
-
-      
-          })
-          .catch((err) => {
-            console.log(err);
-            reject(err);
-
-  });
-  return await promise;
-};
-
-
-*/
-/*
-
-
 
 main()
   .then(() => {
@@ -410,7 +549,7 @@ main()
   })
   .catch((err) => {
     console.log(err);
-  });*/
+  });
 
 //******************************************************* */
 /*

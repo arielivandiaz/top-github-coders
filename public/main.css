@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@600&family=PT+Sans&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    outline: none;
+}
+
+
+html,
+body {
+    font-family: 'PT Sans', sans-serif;
+}
+
+body {
+    width: 100%;
+    min-height: 100vh;
+    overflow-x: hidden;
+    background: #eee;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+    font-family: 'Oswald', sans-serif;
+
+}
+
+
+/*************** VARIABLES ***************/
+
+:root {
+    --text_color: #333;
+    --border: 2px solid #2476FF;
+    --main_color: #2476FF;
+    --main_color_light: #5E9AFF;
+    --main_color_alt: #FFF;
+    --background_gradient: linear-gradient(0deg, rgba(36, 118, 255, 1) 0%, rgba(94, 154, 255, 1) 100%);
+    --background_gradient_2: linear-gradient(0deg, rgba(94, 154, 255, 1) 0%, rgba(36, 118, 255, 1) 100%);
+    --text_color: #333;
+    --text_color_alt: #eee;
+    --radius_min: 6px;
+    --radius_max: 25px;
+
+}
+
+/***************************************/
+
+/**************** STATIC *************/
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+a {
+    cursor: pointer;
+}
+
+a,
+a:visited,
+a:active,
+a:enabled {
+    text-decoration: none;
+}
+
+ul {
+    list-style: none;
+}
+
+.hidden {
+    display: none;
+}
+
+/*************************************************/
+
+
+.scoreboard {
+    width: 100vw;
+    text-align: center;
+    justify-content: center;
+}
+
+.user {
+    width: 80vw;
+    max-width: 900px;
+    
+    left: 0;
+    right: 0;
+    margin: auto;
+    display: flex;
+    flex-direction: row;
+    align-content: center;
+    justify-content: space-around;
+    padding: 10px 30px; 
+    border-color: #999;
+    border-width: 0 0 1px 0;
+    border-style: solid;        
+    
+}
+
+
+
+
+.user img {
+    max-width: 60px;
+    border-radius: 50%;
+}
+
+
+.col1 , .col2 , .col3, .col4{
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    
+    margin: 0 30px;
+  align-items: center;
+  justify-content: center;
+
+    
+    
+    
+}
+
+
+ul h3 {
+    display: inline-block;
+}
